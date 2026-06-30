@@ -1,4 +1,5 @@
 from models.llm_request_model import llmRequest
+from models.text_request_model import textRequest
 import requests
 from fastapi import FastAPI
 
@@ -17,5 +18,19 @@ def run_llm(request :llmRequest):
         },
     )
 
+    data = response.json()
+    return {"output":data.get("response","")}
+
+def run_text(request: textRequest):
+    response = requests.post(
+        "http://localhost:11434/api/generate",
+        json = {
+            "model":"config model namae",
+            "prompt":request.prompt,
+            "system":request.system,
+            "stream": False
+        },
+    )
+    
     data = response.json()
     return {"output":data.get("response","")}

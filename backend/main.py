@@ -1,8 +1,8 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.models.pipeline_model import Pipeline
-from backend.service.graph_service import isDag
+from models.pipeline_model import Pipeline
+from service.executor_service import execute_pipeline
 
 app = FastAPI()
 
@@ -20,5 +20,9 @@ def read_root():
 
 @app.post('/pipelines/parse')
 def parse_pipeline(pipeline: Pipeline):
-    boolDag = isDag(pipeline)
-    return {'num_nodes': len(pipeline.nodes), 'num_edges': len(pipeline.edges), 'is_dag': boolDag}
+    res = execute_pipeline(pipeline)
+    return {
+        "status": res.get("status","error"),
+        "results": res.get("results", []),
+        "log": res.get("log", [])
+    }

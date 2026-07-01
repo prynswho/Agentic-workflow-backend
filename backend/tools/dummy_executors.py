@@ -1,4 +1,7 @@
-
+from models.llm_request_model import llmRequest
+from models.text_request_model import textRequest
+import requests 
+from routers.llm_router import run_llm, run_text
 
 def run_text_node(inputs,data):
     print("this is the text node")
@@ -16,10 +19,35 @@ def run_output_node(inputs,data):
     print("this is the output node")
     return data.get("output","")
 
+def llm_node_executor(inputs: dict, data: dict):
+    configured_text = data.get("text", "")
+    configured_system = data.get("system","youre a helpful assistant")
+    upstream_text = "/n".join([str(val) for val in inputs.values() if val])
+    if upstream_text:
+        final_prompt = f"Context:\n{upstream_text}\n\nTask:\n{configured_text}"
+    else:
+        final_prompt = configured_text
+    if(configured_text == ""):
+       configured_text = "hello there"
+    req_obj = llmRequest(prompt=final_prompt, system=configured_system)
+    return run_llm(req_obj)  
+
+def text_node_executor(inputs: dict, data: dict):
+    configured_text = data.get("text", "")
+    configured_system = data.get("system","youre a helpful assistant")
+    upstream_text = "/n".join([str(val) for val in inputs.values() if val])
+    if upstream_text:
+        final_prompt = f"Context:\n{upstream_text}\n\nTask:\n{configured_text}"
+    else:
+        final_prompt = configured_text
+    if(configured_text == ""):
+       configured_text = "hello there"
+    req_obj = textRequest(prompt=final_prompt, system=configured_system)
+    return run_text(req_obj)
 
 NODE_EXECUTORS = {
-    "text" : run_text_node,
-    "llm" : run_llm_node,
+    "text" : text_node_executor,
+    "llm" : llm_node_executor,
     "create_folder" : run_create_folder_node,
     "output" : run_output_node
 }

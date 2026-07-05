@@ -7,7 +7,7 @@ from fastapi import FastAPI
 app = FastAPI()
 
 
-def run_llm(request: llmRequest):
+def run_llm(request: llmRequest,Model,stream=False):
     response = requests.post(
         "http://localhost:11434/api/generate",
         json={

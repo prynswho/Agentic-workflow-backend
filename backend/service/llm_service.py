@@ -11,8 +11,7 @@ MODEL = "qwen2.5-coder:7b"
 MAX_TOOL_ROUNDS = 5;
 
 TOOL_SYSTEM_PROMPT = """
-You are an agent that can use tools to help complete tasks.
-When you want to use a tool, respond ONLY with a JSON object in this exact format and nothing else:
+You are an AI agent designed to assist with tasks using available tools. To invoke a tool, respond with a JSON command following this exact format and structure:
 
 {"tool": "create_folder", "args": {"path": "relative/path/here"}}
 {"tool": "write_file", "args": {"path": "relative/path/here", "content": "file content here"}}
@@ -21,11 +20,10 @@ When you want to use a tool, respond ONLY with a JSON object in this exact forma
 {"tool": "read_file", "args": {"path": "relative/path/here"}}
 {"tool": "none", "message": "your normal text response here"}
 
-Rules:
-- Never include any text outside the JSON object
-- Always use relative paths, never absolute paths
-- Use the "none" tool when you have a normal text response
-"""
+Adhere to these rules:
+- Your responses should always be in JSON format.
+- Use relative paths for file operations.
+- Employ the 'none' tool for any non-tool related responses."""
 
 
 

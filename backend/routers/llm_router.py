@@ -18,8 +18,7 @@ def run_llm(request: llmRequest,Model,stream=False):
         },
     )
 
-    data = response.json()
-    return {"output": data.get("response", "")}
+    return response.json()
 def run_text(request: textRequest):
     response = requests.post(
         "http://localhost:11434/api/generate",

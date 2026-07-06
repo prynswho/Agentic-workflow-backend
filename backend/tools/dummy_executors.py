@@ -1,6 +1,7 @@
 from models.llm_request_model import llmRequest
 from models.text_request_model import textRequest
 import requests 
+from service.llm_service import run_llm_with_tools, run_llm_without_tools
 from routers.llm_router import run_llm, run_text
 
 def run_text_node(inputs,data):
@@ -21,7 +22,7 @@ def run_output_node(inputs,data):
 
 def llm_node_executor(inputs: dict, data: dict):
     configured_text = data.get("text", "")
-    configured_system = data.get("system","youre a helpful assistant")
+    configured_system = data.get("system","")
     upstream_text = "/n".join([str(val) for val in inputs.values() if val])
     if upstream_text:
         final_prompt = f"Context:\n{upstream_text}\n\nTask:\n{configured_text}"
@@ -30,7 +31,7 @@ def llm_node_executor(inputs: dict, data: dict):
     if(configured_text == ""):
        configured_text = "hello there"
     req_obj = llmRequest(prompt=final_prompt, system=configured_system)
-    return run_llm(req_obj)  
+    return run_llm_with_tools(req_obj)  
 
 def text_node_executor(inputs: dict, data: dict):
     configured_text = data.get("text", "")

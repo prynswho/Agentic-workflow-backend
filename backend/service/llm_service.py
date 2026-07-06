@@ -16,6 +16,9 @@ When you want to use a tool, respond ONLY with a JSON object in this exact forma
 
 {"tool": "create_folder", "args": {"path": "relative/path/here"}}
 {"tool": "write_file", "args": {"path": "relative/path/here", "content": "file content here"}}
+{"tool": "edit_replace_file", "args": {"path": "relative/path/here", "old_content": "text to replace", "new_content": "replacement text"}}
+{"tool": "edit_file", "args": {"path": "relative/path/here", "new_content": "updated file content here"}}
+{"tool": "read_file", "args": {"path": "relative/path/here"}}
 {"tool": "none", "message": "your normal text response here"}
 
 Rules:

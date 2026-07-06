@@ -1,6 +1,6 @@
 import os
 
-WORKSPACE_ROOT = os.path.abspath("/Users/priyanshu/Desktop/agenticWorkflow/workspace");
+WORKSPACE_ROOT = os.path.abspath("/Users/priyanshu/Desktop/agenticWorkflow/agentic workflow project");
 def resolve_safe_path(relative_path:str) -> str:
     full = os.path.normpath(os.path.join(WORKSPACE_ROOT, relative_path ))
     if not full.startswith(WORKSPACE_ROOT):
@@ -19,11 +19,46 @@ def write_file(path:str,content:str) -> dict:
         f.write(content)
     return {"status":"written","path":safe}
 
+def edit_replace_file(path:str,new_content:str,old_content:str) -> dict:
+    safe = resolve_safe_path(path)
+    if not os.path.exists(safe):
+        return {"status":"error","message":"file does not exist"}
+    with open(safe,"r",encoding="utf-8") as f:
+        content = f.read()
+    if old_content not in content:
+        return {"status":"error","message":"old content to be replaced not found in file"}
+    
+    updated_content = content.replace(old_content,new_content) 
+    with open(safe,"w",encoding="utf-8") as f:
+        f.write(updated_content)
+    return {"status":"success","path":safe}
+
+
+def edit_file(path:str,new_content:str) -> dict:
+    safe = resolve_safe_path(path)
+    if not os.path.exists(safe):
+        return {"status":"error","message":"file does not exist"}
+    with open(safe,"r",encoding="utf-8") as f:
+        content = f.read()
+    with open(safe,"w",encoding="utf-8") as f:
+        f.write(new_content)
+    return {"status":"success","path":safe}
+
+def read_file(path:str) -> dict:
+    safe = resolve_safe_path(path)
+    if not os.path.exists(safe):
+        return {"status":"error","message":"file does not exist"}
+    with open(safe,"r",encoding="utf-8") as f:
+        content = f.read()
+    return {"status":"success","path":safe,"content":content}
+
 TOOL_REGISTRY = {
     "create_folder":lambda args:create_folder(args["path"]),
-    "write_file":lambda args:write_file(args["path"],args["content"])
+    "write_file":lambda args:write_file(args["path"],args["content"]),
+    "edit_replace_file":lambda args:edit_replace_file(args["path"],args["new_content"],args["old_content"]),
+    "edit_file":lambda args:edit_file(args["path"],args["new_content"]),
+    "read_file":lambda args:read_file(args["path"])
 }
-
 def execute_tool(tool_name, args:dict):
     if tool_name not in TOOL_REGISTRY:
         raise ValueError(f"Tool {tool_name} is not registered.")

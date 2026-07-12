@@ -1,30 +1,47 @@
 import requests
 import json
 import re
-from routers.llm_router import run_llm, run_text
+from routers.llm_router import run_llm, run_text,call_llm
 from models.llm_request_model import llmRequest
 from models.text_request_model import textRequest
+import logging
+
 
 
 OLLAMA_URL = "http://localhost:11434/api/generate";
-MODEL = "qwen2.5-coder:7b"
-MAX_TOOL_ROUNDS = 5;
+MODEL = "kimi-k2.7-code:cloud"
+MAX_TOOL_ROUNDS = 50;
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 TOOL_SYSTEM_PROMPT = """
-You are an agent that can use tools to help complete tasks.
-When you want to use a tool, respond ONLY with a JSON object in this exact format and nothing else:
+You are an expert autonomous agent designed to complete tasks by effectively using available tools.
+
+Your primary mode of interaction is to respond *exclusively* with a JSON object.
+
+When a task requires interacting with the file system or other external resources, you MUST use one of the provided tools. Structure your tool calls as follows:
+
+{"tool": "tool_name", "args": {"arg1": "value1", "arg2": "value2"}}
+
+Available Tools and their JSON structures:
 
 {"tool": "create_folder", "args": {"path": "relative/path/here"}}
 {"tool": "write_file", "args": {"path": "relative/path/here", "content": "file content here"}}
 {"tool": "edit_replace_file", "args": {"path": "relative/path/here", "old_content": "text to replace", "new_content": "replacement text"}}
 {"tool": "edit_file", "args": {"path": "relative/path/here", "new_content": "updated file content here"}}
 {"tool": "read_file", "args": {"path": "relative/path/here"}}
-{"tool": "none", "message": "your normal text response here"}
+{"tool": "list_files", "args": {"path": "relative/path/here"}}
 
-Rules:
-- Never include any text outside the JSON object
-- Always use relative paths, never absolute paths
-- Use the "none" tool when you have a normal text response
+
+When you have successfully completed the task, or if you determine that no further tool actions are needed, you MUST return your final answer or message using the "none" tool:
+
+{"tool": "none", "message": "your final message or task completion summary here"}
+
+Critical Rules:
+- ALL your responses MUST be a valid JSON object, and ONLY a JSON object. No other text, explanations, or markdown fences () should be included.
+- Use relative paths for all file system operations. ABSOLUTE paths are forbidden.
+- Your final output for a task MUST use the "none" tool with a clear message.
+- If you encounter an error or cannot proceed, use the "none" tool to explain the situation.
 """
 
 
@@ -45,7 +62,7 @@ def run_llm_without_tools(reqObj:textRequest):
 
 def run_llm_with_tools(reqObj: llmRequest) -> dict:
     # system prompt contains tool instructions
-    from tools.filesystem_tools import execute_tool
+    from tools.mcp_tools import execute_tool
 
     prompt = reqObj.prompt
     system = reqObj.system
@@ -55,12 +72,19 @@ def run_llm_with_tools(reqObj: llmRequest) -> dict:
     tools_results_log = []
 
     for round in range(MAX_TOOL_ROUNDS + 1):
-
+        logger.info(full_prompt);
         user_req = llmRequest(prompt=full_prompt, system=combined_system)
-        response_json = run_llm(user_req, MODEL).get("response", "")
+        response_json = call_llm(user_req)
+        # response_json = run_llm(user_req, MODEL).get("response", "")
         parsed_response = parse_tool_response(response_json)
         tool_name = parsed_response.get("tool")
-
+        if not tool_name:
+            return {
+                "status": "error",
+                "results": "Model response was missing a 'tool' field.",
+                "log": tools_results_log,
+                "rounds": round
+            }
         if(tool_name == "none"):
             # model has finished using tools, return final message
             return {

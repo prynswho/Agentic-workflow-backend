@@ -26,3 +26,7 @@ def parse_pipeline(pipeline: Pipeline):
         "results": res.get("results", []),
         "log": res.get("log", [])
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)

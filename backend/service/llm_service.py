@@ -1,7 +1,7 @@
 import requests
 import json
 import re
-from routers.llm_router import run_llm, run_text,call_llm
+from routers.llm_router import run_text,call_llm
 from models.llm_request_model import llmRequest
 from models.text_request_model import textRequest
 import logging
@@ -75,7 +75,6 @@ def run_llm_with_tools(reqObj: llmRequest) -> dict:
         logger.info(full_prompt);
         user_req = llmRequest(prompt=full_prompt, system=combined_system)
         response_json = call_llm(user_req)
-        # response_json = run_llm(user_req, MODEL).get("response", "")
         parsed_response = parse_tool_response(response_json)
         tool_name = parsed_response.get("tool")
         if not tool_name:

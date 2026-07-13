@@ -9,19 +9,19 @@ from service.config import settings
 app = FastAPI()
 
 
-def run_llm(request: llmRequest,Model,stream=False):
-    response = requests.post(
-        "http://localhost:11434/api/generate",
-        json={
-            # "model": "kimi-k2.7-code:cloud", 
-            "model":Model,
-            "prompt": request.prompt,
-            "system": request.system,
-            "stream": False
-        },
-    )
+# def run_llm(request: llmRequest,Model,stream=False):
+#     response = requests.post(
+#         "http://localhost:11434/api/generate",
+#         json={
+#             # "model": "kimi-k2.7-code:cloud", 
+#             "model":Model,
+#             "prompt": request.prompt,
+#             "system": request.system,
+#             "stream": False
+#         },
+#     )
 
-    return response.json()
+#     return response.json()
 
 
 OPEN_ROUTER_API_KEY = settings.open_router_api_key

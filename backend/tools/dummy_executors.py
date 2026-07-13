@@ -2,7 +2,7 @@ from models.llm_request_model import llmRequest
 from models.text_request_model import textRequest
 import requests 
 from service.llm_service import run_llm_with_tools, run_llm_without_tools
-from routers.llm_router import run_llm, run_text
+from routers.llm_router import run_text
 
 def run_text_node(inputs,data):
     print("this is the text node")

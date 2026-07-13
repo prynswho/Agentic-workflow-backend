@@ -12,5 +12,9 @@ class Settings:
     model_gemini: str = os.getenv("MODEL_GEMINI","")
     model_poolside: str = os.getenv("MODEL_POOLSIDE","")
     model: str = os.getenv("MODEL","")
+    # os.getenv returns a str; ensure ttl_seconds is an int with a safe default
+    ttl_seconds: int = int(os.getenv("ttl_sec", "3600"))
+    
+   
 
 settings = Settings()

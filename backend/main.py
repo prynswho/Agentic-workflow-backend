@@ -1,8 +1,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from models.pipeline_model import Pipeline
-from service.executor_service import execute_pipeline
+from app.api.routes.pipelines import router as pipelines_router
 
 app = FastAPI()
 
@@ -13,19 +12,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(pipelines_router)
+
 @app.get('/')
 def read_root():
     return {'Ping': 'Pong'}
-
-
-@app.post('/pipelines/parse')
-def parse_pipeline(pipeline: Pipeline):
-    res = execute_pipeline(pipeline)
-    return {
-        "status": res.get("status","error"),
-        "results": res.get("results", []),
-        "log": res.get("log", [])
-    }
 
 if __name__ == "__main__":
     import uvicorn

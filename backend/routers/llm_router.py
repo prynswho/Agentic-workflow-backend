@@ -32,7 +32,7 @@ MODEL_LAMMA = settings.model_llama
 MODEL_GEMINI = settings.model_gemini
 MODEL_POOLSIDE= settings.model_poolside
 MODEL= settings.model
-
+MODEL_CHECK = settings.model_check
 
 client = OpenAI(
   base_url=BASE_URL,
@@ -40,8 +40,12 @@ client = OpenAI(
 )
 
 def call_llm(request: llmRequest, stream=False):
+    print("BASE_URL:", repr(BASE_URL))
+    print("MODEL:", repr(MODEL_CHECK))
+    print("KEY:", repr(OPEN_ROUTER_API_KEY[:15]))
+    print("CLIENT:", client.base_url)
     response = client.chat.completions.create(
-        model=MODEL,
+        model=MODEL_POOLSIDE,
         messages=[
             {"role": "system", "content": request.system},
             {"role": "user",   "content": request.prompt}

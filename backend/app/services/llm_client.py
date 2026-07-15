@@ -21,6 +21,7 @@ client = OpenAI(
 )
 
 def call_llm(request: llmRequest, stream=False):
+    print(client.base_url)
     response = client.chat.completions.create(
         model=MODEL,
         messages=[

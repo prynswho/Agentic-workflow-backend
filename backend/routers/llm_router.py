@@ -40,10 +40,6 @@ client = OpenAI(
 )
 
 def call_llm(request: llmRequest, stream=False):
-    print("BASE_URL:", repr(BASE_URL))
-    print("MODEL:", repr(MODEL_CHECK))
-    print("KEY:", repr(OPEN_ROUTER_API_KEY[:15]))
-    print("CLIENT:", client.base_url)
     response = client.chat.completions.create(
         model=MODEL_POOLSIDE,
         messages=[

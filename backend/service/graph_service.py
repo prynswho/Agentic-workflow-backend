@@ -32,8 +32,36 @@ def isDag(pipeline):
                 queue.append(neighbor)
     
     boolDag = (visCount == len(nodes))
-    return {"isDag" : boolDag,"executionOrder": node_order}
+    levels = bfs(nodes,edges,adjacency,node_order[0])['level_traversals']
+    return {"isDag" : boolDag,"executionOrder": node_order,'level_traversals':levels}
 
 
 
+def bfs(nodes,edges,adjacency_list,start_node):
+   
+    for edge in edges:
+        adjacency_list[edge['source']].append(edge['target'])
+    vis = {node['id'] : False for node in nodes}
+    vis[start_node] = True;
+    q = deque()
+    q.append(start_node)
+    levels = []
+    while q:
+        curr_len = len(q)
+        curr_level = []
+        for _ in range(curr_len):
+            curr_node = q.popleft()
+            curr_level.append(curr_node)
+
+            for adj_node in adjacency_list[curr_node]:
+                if not vis[adj_node]:
+                    q.append(adj_node)
+                    vis[adj_node] = True
+        levels.append(curr_level)
+    
+    return {"level_traversals" : levels}
+
+
+
+        
 

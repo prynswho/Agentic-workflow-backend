@@ -1,11 +1,13 @@
 from models.pipeline_model import Pipeline
 from service.graph_service import isDag
 from tools.dummy_executors import NODE_EXECUTORS
+import concurrent.futures
+from functools import partial
 # from routers.create_folder_router import run_create_folder
 # from routers.output_router import run_output
 
 
-MAX_RETRY = 2
+MAX_RETRY = 3
 
 
 """
@@ -23,6 +25,47 @@ def build_input(node_id ,edges,results):
         inputs[handle_key] = results[source_id]
     return inputs
 
+
+def execute_node(node_id,nodes_by_id,edges,results):
+    log = []
+    node = nodes_by_id[node_id]
+    node_data = node['data']
+    node_type = node['type']
+    node_executor = NODE_EXECUTORS.get(node_type)
+
+    if node_executor is None:
+        log.append({"node" : node_id, "status" : "skipped", "reason" : f"failed execution for the node {node_type} because no executor was found"})
+        return{
+            "status":"failed",
+            "error":"no node executor found",
+            "message":"no node executor found for the current node",
+            "log":log
+        }
+
+    last_error = None
+    for _ in range(0,MAX_RETRY):
+        try:
+            inputs = build_input(node_id,edges,results)
+            output = node_executor(inputs,node_data)
+            log.append({"node" : node_id, "status": "success", "output":output})
+            return {
+                "status":"success",
+                "results":{node_id:output},
+                "log":log
+            }
+        except Exception as e:
+            last_error = e
+            log.append({"node":node_id,"status":"failed","error":str(e)})
+
+    log.append({"node":node_id,"status":"failed","reason" : f"max retries exceeded as {MAX_RETRY} for the node {node_id}"})
+    return{
+        "status":"failed",
+        "error":last_error,
+        "message":"node failed execution",
+        "log":log
+    }
+
+
 def execute_pipeline(pipeline):
     dag_result = isDag(pipeline)
     nodes = pipeline.nodes;
@@ -33,47 +76,24 @@ def execute_pipeline(pipeline):
             "message": "The pipeline contains a cycle and cannot be executed."
         }
     
-    node_order = dag_result['executionOrder']
-    nodes_by_id = {node['id'] :node for node in nodes}
+    levels = dag_result['level_traversals']
     results = {};
     log = []
-    for node_id in node_order:
-        inputs = build_input(node_id ,edges,results);
-        node = nodes_by_id[node_id]
-        node_type = node.get('type')
-        executor = NODE_EXECUTORS.get(node_type)
-        if executor is None:
-            log.append({"node":node_id ,"status":"skipped", "reason":f"failed execution for the node {node_type} because no executor was found."})
-            continue
+    nodes_by_id = {node['id'] : node for node in nodes}
 
-        data = node.get('data',{}) or {}
-
-        last_error = None
-        for attempt in range(0,MAX_RETRY):
-            try:
-                output = executor(inputs,data)
-                results[node_id] = output
-                log.append({"node":node_id,"status":"success", "output":output})
-                break
-            except Exception as e:
-                last_error = e
-                log.append({"node":node_id,"status":"failed","error":str(e)})
-        else:
-            log.append({"node":node_id,"status":"failed","reason":f"failed execution for the node {node_type} after {MAX_RETRY} attempts."})
-            return {
-                "status":"failed",
-                "error":last_error,
-                "message":"node failed to execute"
-            }
-    return {
-        "status": "success",
-        "results": results,
-        "log": log
-    }
-            
-
-
-
-
-
+    for curr_level in levels:
+        node_fn = partial(execute_node,nodes_by_id=nodes_by_id,edges=edges,results=results)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            temp_res = list(executor.map(node_fn,curr_level))
+        
+        for res in temp_res:
+            log.extend(res['log'])
+            if res['status'] == 'failed':
+                return {"status":"failed","error":res["error"],"message":res["message"],"log":log}
+            results.update(res['results'])
     
+    return {
+        "status":"success",
+        "results":results,
+        "log":log
+    }

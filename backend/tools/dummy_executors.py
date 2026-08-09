@@ -3,6 +3,10 @@ from models.text_request_model import textRequest
 import requests 
 from service.llm_service import run_llm_with_tools, run_llm_without_tools
 from routers.llm_router import run_text
+import uuid
+
+def generate_session_id() -> str:
+    return str(uuid.uuid4())
 
 def run_text_node(inputs,data):
     print("this is the text node")
@@ -31,7 +35,7 @@ def llm_node_executor(inputs: dict, data: dict):
     if(configured_text == ""):
        configured_text = "hello there"
     req_obj = llmRequest(prompt=final_prompt, system=configured_system)
-    return run_llm_with_tools(req_obj)  
+    return run_llm_with_tools(req_obj,session_id=generate_session_id())  
 
 def text_node_executor(inputs: dict, data: dict):
     configured_text = data.get("text", "")

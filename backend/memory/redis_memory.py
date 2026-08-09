@@ -32,6 +32,14 @@ def get_recent_turns(session_id:str) ->list[dict]:
 def clear_session(session_id:str) -> None:
     local_redis.delete(_session_key(session_id))
 
+
+def set_curr(session_id: str, value: str) -> None:
+    "overwrite the session's turn list with a single compressed summary turn"
+    key = _session_key(session_id)
+    local_redis.delete(key)
+    local_redis.rpush(key, json.dumps({"role": "system", "content": value}))
+    local_redis.expire(key, TTL_SECONDS)
+
 def build_prompt(session_id:str, task:str) -> str:
     recent_turns = get_recent_turns(session_id)
 

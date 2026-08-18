@@ -26,11 +26,55 @@ def build_input(node_id ,edges,results):
     return inputs
 
 
+def execute_output_node(node_id, edges, completed_outputs):
+    """Return the already-computed value from an Output node's source.
+
+    Output nodes are pass-through terminal nodes.  They deliberately copy the
+    source value unchanged so callers can look up either the producer node or
+    the Output node in the top-level ``results`` map.
+    """
+    incoming_edge = next(
+        (edge for edge in edges if edge.get("target") == node_id),
+        None,
+    )
+
+    if incoming_edge is None:
+        return {
+            "status": "error",
+            "error": f"Output node '{node_id}' has no incoming edge.",
+        }
+
+    source_id = incoming_edge.get("source")
+    if source_id not in completed_outputs:
+        return {
+            "status": "error",
+            "error": (
+                f"Output node '{node_id}' cannot read source node "
+                f"'{source_id}' because it has not completed."
+            ),
+        }
+
+    return completed_outputs[source_id]
+
+
 def execute_node(node_id,nodes_by_id,edges,results):
     log = []
     node = nodes_by_id[node_id]
     node_data = node['data']
     node_type = node['type']
+
+    # React Flow emits Output nodes as ``customOutput``.  The DAG scheduler
+    # only runs this node after its source has completed, so ``results`` is the
+    # completed-node-output map required for this pass-through operation.
+    if node_type == "customOutput":
+        output = execute_output_node(node_id, edges, results)
+        log.append({"node": node_id, "status": output.get("status", "success"), "output": output})
+        return {
+            "status": "success",
+            "results": {node_id: output},
+            "log": log,
+        }
+
     node_executor = NODE_EXECUTORS.get(node_type)
 
     if node_executor is None:

@@ -4,7 +4,7 @@ from service.config import settings
 
 local_redis = redis.Redis(host="localhost",port=6379,decode_responses=True)
 
-MAX_TURNS_TO_KEEP = 10
+MAX_TURNS_TO_KEEP = 50
 TTL_SECONDS = settings.ttl_seconds
 
 def _session_key(session_id:str) -> str:

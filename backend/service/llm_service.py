@@ -10,7 +10,7 @@ import logging
 OLLAMA_URL = "http://localhost:11434/api/generate";
 MODEL = "kimi-k2.7-code:cloud"
 MAX_TOOL_ROUNDS = 50
-MAX_COMPRESSION_ROUNDS = 2  # fetch_all + none — compression should never need more
+MAX_COMPRESSION_ROUNDS = 20  # fetch_all + none — compression should never need more
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 

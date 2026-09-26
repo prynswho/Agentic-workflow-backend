@@ -1,10 +1,10 @@
 import requests
 import json
 import re
-from routers.llm_router import run_text, call_llm
-from models.llm_request_model import llmRequest
-from models.text_request_model import textRequest
-from memory.redis_memory import add_turns, set_curr
+from app.integrations.llm_runtime.client import call_llm, run_text
+from app.integrations.llm_runtime.llm_request import llmRequest
+from app.integrations.llm_runtime.memory import add_turns, set_curr
+from app.integrations.llm_runtime.text_request import textRequest
 import logging
 
 OLLAMA_URL = "http://localhost:11434/api/generate";
@@ -89,7 +89,7 @@ def run_llm_without_tools(reqObj: textRequest):
 def run_llm_with_tools(reqObj: llmRequest, session_id: str) -> dict:
     """Runs the filesystem tool-calling loop AND records the turn history to Redis
     (user prompt in, final answer out) so run_context_compression has something to read."""
-    from tools.mcp_tools import execute_tool
+    from app.integrations.llm_runtime.mcp_client import execute_tool
 
     prompt = reqObj.prompt
     system = reqObj.system
@@ -160,7 +160,7 @@ def run_context_compression(session_id: str) -> dict:
     """Runs CONTEXT_COMPRESSION_PROMPT to fetch + summarize a session's turns.
     The LLM only produces the summary text — persisting it to Redis is done
     here in code (deterministic), not left to the model to decide via a tool call."""
-    from tools.mcp_tools import execute_tool
+    from app.integrations.llm_runtime.mcp_client import execute_tool
 
     full_prompt = f"session_id={session_id}"
 

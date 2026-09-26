@@ -1,6 +1,6 @@
 import redis
 import json
-from service.config import settings
+from app.integrations.llm_runtime.settings import settings
 
 local_redis = redis.Redis(host="localhost",port=6379,decode_responses=True)
 
@@ -49,4 +49,3 @@ def build_prompt(session_id:str, task:str) -> str:
         for t in recent_turns:
             lines.append(f"[{t['role']}] {t['content']}")
     return "\n".join(lines) #joins using newlines , into a string
-

@@ -1,9 +1,9 @@
-from models.llm_request_model import llmRequest
-from models.text_request_model import textRequest
+from app.integrations.llm_runtime.llm_request import llmRequest
+from app.integrations.llm_runtime.text_request import textRequest
 import requests
 from fastapi import FastAPI
 from openai import OpenAI
-from service.config import settings
+from app.integrations.llm_runtime.settings import settings
 
 
 app = FastAPI()

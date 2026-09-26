@@ -1,8 +1,8 @@
-from models.llm_request_model import llmRequest
-from models.text_request_model import textRequest
+from app.integrations.llm_runtime.llm_request import llmRequest
+from app.integrations.llm_runtime.text_request import textRequest
 import requests 
-from service.llm_service import run_llm_with_tools, run_llm_without_tools
-from routers.llm_router import run_text
+from app.integrations.llm_runtime.client import run_text
+from app.integrations.llm_runtime.tool_loop import run_llm_with_tools, run_llm_without_tools
 import uuid
 
 def generate_session_id() -> str:

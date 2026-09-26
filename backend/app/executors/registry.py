@@ -27,7 +27,7 @@ def execute_node(node: dict[str, Any], inputs: dict[str, Any], completed_outputs
     if node_type == "llm":
         # Compatibility boundary: existing model/tool calling behavior remains
         # untouched while scheduling and API code live in the new app package.
-        from tools.dummy_executors import llm_node_executor
+        from app.integrations.llm_runtime.node_executor import llm_node_executor
         return llm_node_executor(inputs, data)
 
     raise ValueError(f"No executor is registered for node type '{node_type}'.")

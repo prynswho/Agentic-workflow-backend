@@ -1,6 +1,6 @@
-from models.pipeline_model import Pipeline
-from service.graph_service import isDag
-from tools.dummy_executors import NODE_EXECUTORS
+from app.integrations.llm_runtime.node_executor import NODE_EXECUTORS
+from app.legacy_pipeline.graph import isDag
+from app.legacy_pipeline.pipeline import Pipeline
 import concurrent.futures
 from functools import partial
 # from routers.create_folder_router import run_create_folder

@@ -1,5 +1,5 @@
 from collections import deque ,defaultdict
-from models.pipeline_model import Pipeline
+from app.legacy_pipeline.pipeline import Pipeline
 
 def isDag(pipeline):
     nodes = pipeline.nodes
